@@ -1,0 +1,92 @@
+# Build folders
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio temporary files
+.vs/
+.vscode/
+
+# Packages
+*.nupkg
+*.snupkg
+*.nuspec
+
+# Rider IDE
+.idea/
+
+# DotCover
+.idea.DotSettings.user
+
+# Resharper
+_ReSharper*/
+*.DotSettings.user
+
+# SQL Server files
+*.mdf
+*.ldf
+
+# Publish outputs
+publish/
+*.Publish.xml
+
+# Logs
+*.log
+
+# Others
+*.pdb
+*.cache
+*.ilk
+*.idb
+*.ipdb
+*.iobj
+
+# Dotnet Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Azure Pipelines
+.azure-pipelines.yml
+
+# User-specific files for ASP.NET
+*.vspscc
+*_i.c
+*_p.c
+*.cachefile
+
+# Coverage results
+coverage*.xml
+*.coverage
+*.coveragexml
+
+# Others
+*.dbmdl
+*.bak
+*.backup
+*.log
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used by the OS
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Others
+*.tmp
+*.temp
