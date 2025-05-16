@@ -1,4 +1,5 @@
 using CantNuggerPorCarpeta.Modelos;
+using Microsoft.VisualBasic;
 using System.Configuration;
 using System.Windows.Forms;
 
@@ -33,6 +34,18 @@ namespace CantNuggerPorCarpeta
                 DataPropertyName = "CantDirectorios",
                 HeaderText = "Cantidad"
             });
+
+
+
+            // Columna DirectoriesSizeMB
+            DgvDirectorios.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "DirectoriesSizeMB",
+                HeaderText = "SizeMB"
+            });
+
+            
+
 
             // Columna de botón
             var botonCol = new DataGridViewButtonColumn
@@ -93,7 +106,7 @@ namespace CantNuggerPorCarpeta
         {
             string rootPath = TxtRootPath.Text.Trim();
 
-            // Validar si la ruta existe  
+            // Validar si la ruta existe 
             if (Directory.Exists(rootPath))
             {
                 ActualizarStatus($"Recorriendo el directorio: {rootPath}");
@@ -102,29 +115,49 @@ namespace CantNuggerPorCarpeta
 
                 try
                 {
-                    // Obtener los subdirectorios del directorio raíz  
+                    // Obtener los subdirectorios del directorio raíz    
                     string[] subdirectories = Directory.GetDirectories(rootPath);
 
-                    // Recorrer cada subdirectorio  
+                    // Recorrer cada subdirectorio 
                     foreach (string subdirectory in subdirectories)
                     {
-                        // Contar los subdirectorios dentro de este subdirectorio  
                         string[] innerDirectories = Directory.GetDirectories(subdirectory);
 
                         if (innerDirectories.Length >= 2)
                         {
-                            ActualizarStatus($"El directorio '{Path.GetFileName(subdirectory)}' contiene {innerDirectories.Length} subdirectorios.");
-                            Directorios.Add(new DirectorioALimpiar() { Path = subdirectory, CantDirectorios = innerDirectories.Length });
+                            long totalSize = 0;
+
+                            foreach (var innerDir in innerDirectories)
+                            {
+                                try
+                                {
+                                    totalSize += GetDirectorySize(innerDir);
+                                }
+                                catch (Exception ex)
+                                {
+                                    ActualizarStatus($"No se pudo leer '{innerDir}': {ex.Message}");
+                                }
+                            }
+
+                            ActualizarStatus($"'{Path.GetFileName(subdirectory)}' tiene {innerDirectories.Length} subdirectorios, total: {totalSize} bytes.");
+
+                            Directorios.Add(new DirectorioALimpiar()
+                            {
+                                Path = subdirectory,
+                                CantDirectorios = innerDirectories.Length,
+                                DirectoriesSize = totalSize
+                            });
                         }
                     }
 
+                    // Mostrar en grilla, ordenado por cantidad de directorios
+                    DgvDirectorios.DataSource = Directorios
+                        .OrderByDescending(c => c.DirectoriesSize)
+                        .ToList();
 
-                    // Asignar la fuente de datos
-                    DgvDirectorios.DataSource = Directorios.OrderByDescending(c => c.CantDirectorios).ToList<DirectorioALimpiar>();
                     DgvDirectorios.AutoResizeColumns();
 
-
-                    ActualizarStatus($"Hay {Directorios.Count} Directorios que Corregir");
+                    ActualizarStatus($"Hay {Directorios.Count} directorios que corregir.");
                 }
                 catch (UnauthorizedAccessException ex)
                 {
@@ -139,9 +172,8 @@ namespace CantNuggerPorCarpeta
             {
                 ActualizarStatus("La ruta especificada no existe.");
             }
-
-
         }
+
 
 
         /// <summary>
@@ -170,8 +202,43 @@ namespace CantNuggerPorCarpeta
                 MessageBox.Show("La carpeta no existe.");
             }
         }
+
+
+
+        /// <summary>
+        /// Calcula el tamaño total de un directorio y sus subdirectorios
+        /// </summary>
+        /// <param name="folderPath"></param>
+        /// <returns></returns>
+        private long GetDirectorySize(string folderPath)
+        {
+            long size = 0;
+
+            try
+            {
+                // Archivos en el directorio actual
+                var files = Directory.GetFiles(folderPath);
+                foreach (string file in files)
+                {
+                    size += new FileInfo(file).Length;
+                }
+
+                // Subdirectorios (recursivo)
+                var subDirs = Directory.GetDirectories(folderPath);
+                foreach (string dir in subDirs)
+                {
+                    size += GetDirectorySize(dir); // recursión
+                }
+            }
+            catch(Exception ex)
+            {
+                ActualizarStatus($"Ocurrió un error: {ex.Message}");
+                MessageBox.Show($"Ocurrió un error: {ex.Message}");
+            }
+
+            return size;
+        }
         #endregion
 
-      
     }
 }
